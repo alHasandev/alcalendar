@@ -14,6 +14,9 @@ export const serverSchema = z.object({
   DISCORD_CLIENT_SECRET: z.string(),
   GOOGLE_CLIENT_ID: z.string(),
   GOOGLE_CLIENT_SECRET: z.string(),
+  HOLIDAYS_API_URL: z.string().url(),
+  HOLIDAYS_API_KEY: z.string(),
+  GOGGLE_CALENDAR_EVENT_LIST: z.string().url()
 });
 
 /**

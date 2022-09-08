@@ -14,6 +14,44 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Year {
+  id       Int     @id @default(autoincrement())
+  fullYear Int     @unique
+  months   Month[]
+}
+
+model Month {
+  id         Int    @id @default(autoincrement())
+  index      Int
+  name       String
+  daysCount  Int
+  weeksCount Int
+  year       Year   @relation(fields: [yearId], references: [id])
+  yearId     Int
+  dates      Date[]
+}
+
+model Date {
+  id        Int      @id @default(autoincrement())
+  rawDate   DateTime
+  date      Int
+  dayName   String
+  dayIndex  Int
+  weekIndex Int
+  month     Month    @relation(fields: [monthId], references: [id])
+  monthId   Int
+  marks     Mark[]
+}
+
+model Mark {
+  id          Int     @id @default(autoincrement())
+  type        String
+  summary     String
+  description String?
+  date        Date    @relation(fields: [dateId], references: [id])
+  dateId      Int
+}
+
 model Example {
   id String @id @default(cuid())
 }
