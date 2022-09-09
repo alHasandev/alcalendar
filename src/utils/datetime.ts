@@ -62,6 +62,15 @@ export const getMonthsNames = <T = unknown, P = typeof MONTH_NAMES>(
   return MONTH_NAMES as P
 }
 
+export const getDaysNames = <T = unknown, P = typeof DAY_NAMES>(
+  callback?: (_dayName: DayName, _dayIndex: DayIndex) => T
+) => {
+  if (!!callback)
+    return DAY_NAMES.map((value, i) => callback(value, i as DayIndex)) as P
+
+  return DAY_NAMES as P
+}
+
 export const getDayName = (dayOfWeek: DayIndex) => {
   return DAY_NAMES[dayOfWeek]
 }

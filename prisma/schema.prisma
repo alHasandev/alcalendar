@@ -15,9 +15,9 @@ datasource db {
 }
 
 model Year {
-  id       Int     @id @default(autoincrement())
-  fullYear Int     @unique
-  months   Month[]
+  id      Int     @id
+  updated String
+  months  Month[]
 }
 
 model Month {
@@ -26,6 +26,7 @@ model Month {
   name       String
   daysCount  Int
   weeksCount Int
+  updated    String
   year       Year   @relation(fields: [yearId], references: [id])
   yearId     Int
   dates      Date[]

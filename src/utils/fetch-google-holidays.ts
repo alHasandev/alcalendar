@@ -1,5 +1,6 @@
 import { env } from '@/env/server.mjs'
-import { endOfMonth, formatRFC3339, lastDayOfMonth } from 'date-fns'
+import { endOfMonth, formatRFC3339, getMonth, lastDayOfMonth } from 'date-fns'
+import { MarksReducer } from './get-months2'
 
 export type HolidaysAPI = {
   kind: 'calendar#events'
@@ -110,11 +111,31 @@ export const fetchHolidays: FetchHolidays = async (params) => {
     ...dateConstraintToEventsTimeRange(params),
   })
 
-  console.log('time range', dateConstraintToEventsTimeRange(params))
-  console.log('api url', env.GOGGLE_CALENDAR_EVENT_LIST + queryString)
-
   const res = await fetch(env.GOGGLE_CALENDAR_EVENT_LIST + queryString)
   return res.json() as Promise<HolidaysAPI>
+}
+
+export const googleHolidaysReducer: MarksReducer<Holiday> = (prev, curr) => {
+  const date = new Date(curr.start.date)
+  const m = getMonth(date)
+  const d = date.getDate()
+
+  const mark = {
+    type: curr.eventType,
+    summary: curr.summary,
+    description: curr.description,
+  }
+
+  if (!prev?.[m]?.[d]) {
+    prev[m] = {
+      ...prev[m],
+      [d]: [mark],
+    }
+  } else {
+    prev[m]?.[d]?.push(mark)
+  }
+
+  return prev
 }
 
 export default fetchHolidays

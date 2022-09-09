@@ -3,8 +3,7 @@ import {
   formatRFC3339,
   getDay,
   getDaysInMonth,
-  getMonth,
-  getWeek,
+  getTime,
   getWeekOfMonth,
   getWeeksInMonth,
 } from 'date-fns'
@@ -16,7 +15,7 @@ import {
   MonthIndex,
 } from './datetime'
 
-import fetchHolidays from './fetch-google-holidays'
+import fetchHolidays, { googleHolidaysReducer } from './fetch-google-holidays'
 
 export type DateMark = Prisma.MarkCreateWithoutDateInput
 export type DateMarks = Prisma.MarkCreateNestedManyWithoutDateInput
@@ -64,42 +63,49 @@ const dateFormatter = (
   })
 }
 
-export const getMonthlyHolidays = async (year: number) => {
+export type IndexedMarks = Record<number, DateMark[]>
+export type MonthMarksMap = Map<MonthIndex, IndexedMarks>
+
+export type MarksReducer<T> = (
+  _prev: Record<number, IndexedMarks>,
+  _curr: T,
+  _index: number,
+  _array: T[]
+) => Record<number, IndexedMarks>
+
+export const objToMap = <K extends string | number | symbol, V>(
+  obj: Record<K, V>
+) => {
+  const map = Object.keys(obj).reduce((prev, curr) => {
+    prev.set(curr as K, obj[curr as K])
+
+    return prev
+  }, new Map<K, V>())
+
+  return map
+}
+
+export const holidaysObjConverter = <T>(
+  items: T[],
+  reducer: MarksReducer<T>
+) => {
+  const reduced: Record<MonthIndex, IndexedMarks> = items.reduce(
+    reducer,
+    Object.create(null)
+  )
+
+  return reduced
+}
+
+export const getHolidaysMap = async (year: number) => {
   const holidaysData = await fetchHolidays({
     year: year,
   })
 
-  const holidays = new Map<MonthIndex, Record<number, DateMark[]>>()
-
-  holidaysData.items.map((item) => {
-    const date = new Date(item.start.date)
-    const d = date.getDate()
-    const m = getMonth(date) as MonthIndex
-    const holidaysInMonth = holidays.get(m)
-    const mark = {
-      type: item.eventType,
-      summary: item.summary,
-      description: item.description,
-    }
-
-    if (!holidaysInMonth) {
-      const dateProps = {
-        [d]: [mark],
-      }
-
-      holidays.set(m, dateProps)
-    } else if (holidaysInMonth && !holidaysInMonth?.[d]) {
-      const dateProps = {
-        ...holidaysInMonth,
-        [d]: [mark],
-      }
-
-      holidays.set(m, dateProps)
-    } else {
-      holidays.get(m)?.[d]?.push(mark)
-    }
-    return item
-  })
+  const holidays: Record<MonthIndex, IndexedMarks> = holidaysObjConverter(
+    holidaysData.items,
+    googleHolidaysReducer
+  )
 
   return holidays
 }
@@ -142,17 +148,21 @@ const createDateRange = (
     ])
   })
 
-export async function getYearlyMonths(year: number) {
-  const holidays = await getMonthlyHolidays(year)
+export async function getYearlyMonths(
+  year: number,
+  monthMarksMap?: MonthMarksMap
+) {
+  const monthMarks: MonthMarksMap = monthMarksMap || new Map()
+
   const months: MonthProps[] = getMonthsNames((monthName, n) => {
     const monthIndex = n as MonthIndex
     const date = new Date(year, monthIndex, 1)
-
-    const markeds = holidays.get(monthIndex)
+    const markeds = monthMarks.get(monthIndex)
 
     const month: MonthProps = {
       index: monthIndex,
       name: monthName,
+      updated: formatRFC3339(new Date()),
       daysCount: getDaysInMonth(date),
       weeksCount: getWeeksInMonth(date),
       dates: {

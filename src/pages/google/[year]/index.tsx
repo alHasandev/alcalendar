@@ -1,5 +1,3 @@
-import { DAY_NAMES, getMonthlyDates, MonthProps } from '@/utils/get-months'
-
 import type {
   GetStaticPaths,
   GetStaticProps,
@@ -7,6 +5,11 @@ import type {
   NextPage,
 } from 'next'
 import Head from 'next/head'
+
+import type { Prisma } from '@prisma/client'
+
+import { prisma } from '@/server/db/client'
+import { getDaysNames } from '@/utils/datetime'
 
 type CalendarProps = InferGetStaticPropsType<typeof getStaticProps>
 
@@ -29,7 +32,7 @@ const Calendar: NextPage<CalendarProps> = ({ months }) => {
               <section key={month.name} className="bg-white">
                 <header className="px-4 py-2">{month.name}</header>
                 <div className="grid grid-cols-7 text-sm text-center px-4">
-                  {DAY_NAMES.map((dayName) => (
+                  {getDaysNames((dayName) => (
                     <span className="border py-2" key={dayName}>
                       {dayName}
                     </span>
@@ -42,8 +45,9 @@ const Calendar: NextPage<CalendarProps> = ({ months }) => {
                       date.marks?.[0]?.type === 'next-offset'
 
                     const isHoliday =
-                      date.marks?.[0]?.type === 'libur-nasional' ||
-                      date.marks?.[0]?.type === 'libur-mingguan'
+                      date.marks?.[0]?.type === 'default' ||
+                      date.marks?.[0]?.type === 'holiday'
+
                     return (
                       <span
                         className={`shadow-[0_0_0_1px_rgb(100,116,139)] py-2 ${
@@ -67,9 +71,21 @@ const Calendar: NextPage<CalendarProps> = ({ months }) => {
 
 export default Calendar
 
+const monthArgs = {
+  include: {
+    dates: {
+      include: {
+        marks: true,
+      },
+    },
+  },
+}
+
+type MonthArgs = typeof monthArgs
+
 export const getStaticProps: GetStaticProps<
   {
-    months: MonthProps[]
+    months: Prisma.MonthGetPayload<MonthArgs>[]
   },
   {
     year: string
@@ -77,7 +93,14 @@ export const getStaticProps: GetStaticProps<
 > = async ({ params }) => {
   if (!params?.year) return { notFound: true }
 
-  const months = await getMonthlyDates(Number(params.year))
+  const year = Number(params.year)
+
+  const months = await prisma.month.findMany({
+    where: {
+      yearId: year,
+    },
+    include: monthArgs.include,
+  })
 
   return {
     props: {
@@ -88,7 +111,11 @@ export const getStaticProps: GetStaticProps<
 
 export const getStaticPaths: GetStaticPaths<{ year: string }> = async () => {
   return {
-    paths: [{ params: { year: '2021' } }, { params: { year: '2022' } }],
+    paths: [
+      { params: { year: '2021' } },
+      { params: { year: '2022' } },
+      { params: { year: '2023' } },
+    ],
     fallback: false,
   }
 }
