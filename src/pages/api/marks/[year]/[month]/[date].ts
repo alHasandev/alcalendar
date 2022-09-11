@@ -1,7 +1,5 @@
 import { NextApiHandler } from 'next'
 import { prisma } from '@/server/db/client'
-import { makeMonthId } from '@/server/db/models/month'
-import { MonthIndex } from '@/utils/datetime'
 import { makeDateId } from '@/server/db/models/date'
 import { getDateQueryHandler } from '@/utils/query'
 

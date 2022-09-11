@@ -1,7 +1,6 @@
 import { getDayName, MonthIndex } from '@/utils/datetime'
 import { Prisma } from '@prisma/client'
 import { format, getDay, getWeek } from 'date-fns'
-import { makeMonthId } from './month'
 
 export type DateProps = Prisma.DateDataUncheckedCreateWithoutMonthInput
 export type DatesProps = Prisma.DateDataCreateNestedManyWithoutMonthInput

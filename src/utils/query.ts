@@ -1,23 +1,4 @@
 import { NextApiRequest } from 'next'
-import { MonthIndex } from './datetime'
-
-type DateQuery = {
-  year: number
-  month?: number
-  date?: number
-}
-
-type TNumber<T> = T extends Record<string | number | symbol, unknown>
-  ? {
-      [K in keyof T as K]: number
-    }
-  : number
-
-type TBoolean<T> = T extends Record<string | number | symbol, unknown>
-  ? {
-      [K in keyof T as K]: boolean
-    }
-  : boolean
 
 export const getReqQuery = <
   T extends Record<K, V>,

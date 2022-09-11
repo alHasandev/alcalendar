@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 import { prisma } from '@/server/db/client'
 import { yearArgs } from '@/utils/year'
-import { getDateQueryHandler, getReqQuery } from '@/utils/query'
+import { getDateQueryHandler } from '@/utils/query'
 
 export default async function handler(
   req: NextApiRequest,

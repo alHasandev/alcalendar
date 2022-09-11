@@ -54,18 +54,18 @@ const Calendar: NextPage<CalendarProps> = ({ months }) => {
                     </span>
                   )
                 })}
-                {month.dates.map((n, i) => {
+                {month.dates.map((date) => {
                   const isHoliday =
-                    n.marks?.[0]?.type === 'default' ||
-                    n.marks?.[0]?.type === 'holiday'
+                    date.marks?.[0]?.type === 'default' ||
+                    date.marks?.[0]?.type === 'holiday'
                   return (
                     <span
                       className={`shadow-[0_0_0_1px_rgb(100,116,139)] py-2 text-slate-900 ${
                         isHoliday ? 'text-red-600 bg-red-50' : ''
                       }`}
-                      key={n.id}
+                      key={date.id}
                     >
-                      {n.date}
+                      {date.date}
                     </span>
                   )
                 })}
