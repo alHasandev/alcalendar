@@ -15,42 +15,84 @@ datasource db {
 }
 
 model Year {
-  id      Int     @id
-  updated String
-  months  Month[]
+  id        Int        @id // number: YYYY
+  months    Month[]
+  dates     DateData[]
+  updatedAt DateTime   @updatedAt
 }
 
 model Month {
-  id         Int    @id @default(autoincrement())
+  id         String     @id // string: YYYYmm
   index      Int
   name       String
   daysCount  Int
   weeksCount Int
-  updated    String
-  year       Year   @relation(fields: [yearId], references: [id])
-  yearId     Int
-  dates      Date[]
+  weekIndex  Int
+  year       Year       @relation(fields: [yearId], references: [id])
+  yearId     Int // number: YYYY (4)
+  dates      DateData[]
+  updatedAt  DateTime   @updatedAt
+
+  @@unique([yearId, weekIndex], name: "weekOfYear")
 }
 
-model Date {
-  id        Int      @id @default(autoincrement())
-  rawDate   DateTime
-  date      Int
-  dayName   String
-  dayIndex  Int
-  weekIndex Int
-  month     Month    @relation(fields: [monthId], references: [id])
-  monthId   Int
-  marks     Mark[]
+model DateData {
+  id         String   @id // string: YYYYmmdd (8)
+  date       Int
+  dayName    String
+  dayIndex   Int
+  weekIndex  Int
+  monthIndex Int
+  Month      Month    @relation(fields: [monthId], references: [id])
+  monthId    String // string: YYYYmm (6)
+  year       Year     @relation(fields: [yearId], references: [id])
+  yearId     Int // number: YYYY (4)
+  marks      Mark[]
+  updatedAt  DateTime @updatedAt
+
+  @@map("Date")
+}
+
+model Permission {
+  id      String   @id @default(cuid())
+  name    String   @unique
+  value   String
+  authors Config[] @relation(name: "author.permissions")
+  groups  Config[] @relation(name: "group.permissions")
+}
+
+model Config {
+  id     String       @id @default(cuid())
+  mark   Mark         @relation(fields: [markId], references: [id])
+  markId Int          @unique
+  author Permission[] @relation(name: "author.permissions")
+  group  Permission[] @relation(name: "group.permissions")
 }
 
 model Mark {
-  id          Int     @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   type        String
   summary     String
   description String?
-  date        Date    @relation(fields: [dateId], references: [id])
-  dateId      Int
+  image       String?
+  startAt     Int? // Time: H:m:i -> to miliseconds
+  endAt       Int? // Time: H:m:i -> to miliseconds
+  date        DateData @relation(fields: [dateId], references: [id])
+  dateId      String // string: YYYYmmdd (8)
+  author      User?    @relation(fields: [authorId], references: [id])
+  authorId    String?
+  group       Group?   @relation(fields: [groupId], references: [id])
+  groupId     String?
+  config      Config?
+  updatedAt   DateTime @updatedAt
+}
+
+model Group {
+  id        String   @id @default(cuid())
+  name      String
+  members   User[]
+  updatedAt DateTime @updatedAt
+  marks     Mark[]
 }
 
 model Example {
@@ -92,6 +134,9 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
+  group         Group?    @relation(fields: [groupId], references: [id])
+  groupId       String?
+  Mark          Mark[]
 }
 
 model VerificationToken {

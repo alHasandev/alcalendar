@@ -53,22 +53,16 @@ export const MONTH_NAMES = [
 export type MonthIndex = IndexType<typeof MONTH_NAMES>
 export type MonthName = typeof MONTH_NAMES[MonthIndex]
 
-export const getMonthsNames = <T = unknown, P = typeof MONTH_NAMES>(
-  callback?: (_monthName: MonthName, _monthIndex: MonthIndex) => T
+export const getMonthNames = <T>(
+  callback: (_monthName: MonthName, _monthIndex: MonthIndex) => T
 ) => {
-  if (!!callback)
-    return MONTH_NAMES.map((value, i) => callback(value, i as MonthIndex)) as P
-
-  return MONTH_NAMES as P
+  return MONTH_NAMES.map((value, i) => callback(value, i as MonthIndex))
 }
 
-export const getDaysNames = <T = unknown, P = typeof DAY_NAMES>(
-  callback?: (_dayName: DayName, _dayIndex: DayIndex) => T
+export const getDayNames = <T>(
+  callback: (_dayName: DayName, _dayIndex: DayIndex) => T
 ) => {
-  if (!!callback)
-    return DAY_NAMES.map((value, i) => callback(value, i as DayIndex)) as P
-
-  return DAY_NAMES as P
+  return DAY_NAMES.map((value, i) => callback(value, i as DayIndex))
 }
 
 export const getDayName = (dayOfWeek: DayIndex) => {
@@ -84,9 +78,17 @@ type DateRangeFormatterArgs = {
   _date: number
 }
 
+interface DateRangeOffsetFormatterArgs extends DateRangeFormatterArgs {
+  _type: 'prev' | 'current' | 'next'
+}
+
 type DateRangeFormatter<T> = (_data: DateRangeFormatterArgs) => T
+type DateRangeOffsetFormatter<T> = (_data: DateRangeOffsetFormatterArgs) => T
 
 const defaultFormatter = (args: DateRangeFormatterArgs) =>
+  new Date(args._year, args._month, args._date, TO)
+
+const defaultOffsetFormatter = (args: DateRangeFormatterArgs) =>
   new Date(args._year, args._month, args._date, TO)
 
 export const getDateRange = <T = Date>(
@@ -99,9 +101,6 @@ export const getDateRange = <T = Date>(
   ) as DateRangeFormatter<T>
 
   const firstDate = new Date(year, monthIndex, 1)
-  const dayOfWeek = getDay(firstDate)
-  const lastDate = lastDayOfMonth(firstDate)
-  const lastDay = getDay(lastDate)
 
   const daysCount = getDaysInMonth(firstDate)
 
@@ -113,32 +112,78 @@ export const getDateRange = <T = Date>(
     (n) => mutator({ _year: year, _month: monthIndex, _date: n })
   )
 
-  let preOffset: T[] = []
+  return dateRange
+}
+
+export const getDateRangeOffsets = <T = Date>(
+  date: Date,
+  formatter?: DateRangeOffsetFormatter<T>
+) => {
+  const mutator = (
+    !formatter ? defaultOffsetFormatter : formatter
+  ) as DateRangeOffsetFormatter<T>
+
+  const monthIndex = date.getMonth()
+  const dayOfWeek = getDay(date)
+
+  const lastDate = lastDayOfMonth(date)
+  const lastDay = getDay(lastDate)
+
+  let prevOffset: T[] = []
 
   if (dayOfWeek !== 0) {
-    const from = startOfWeek(firstDate)
+    const from = startOfWeek(date)
     const fromDate = from.getUTCDate()
     const prevY = from.getFullYear()
-    console.log('preOffset', fromDate)
 
     const toDate = fromDate + dayOfWeek - 1
-    preOffset = range({ from: fromDate, to: toDate }, (n) => {
+    prevOffset = range({ from: fromDate, to: toDate }, (n) => {
       const prevM = (monthIndex - 1 >= 0 ? monthIndex - 1 : 11) as MonthIndex
-      return mutator({ _year: prevY, _month: prevM, _date: n })
+      return mutator({ _year: prevY, _month: prevM, _date: n, _type: 'prev' })
     })
   }
 
-  let postOffset: T[] = []
+  let nextOffset: T[] = []
   if (lastDay < 6) {
     const from = addDays(lastDate, 1)
     const nextY = from.getFullYear()
 
     const toDate = 6 - lastDay
-    postOffset = range({ from: 1, to: toDate }, (n) => {
+    nextOffset = range({ from: 1, to: toDate }, (n) => {
       const nextM = (monthIndex + 1 <= 11 ? monthIndex + 1 : 0) as MonthIndex
-      return mutator({ _year: nextY, _month: nextM, _date: n })
+      return mutator({ _year: nextY, _month: nextM, _date: n, _type: 'next' })
     })
   }
 
-  return [...preOffset, ...dateRange, ...postOffset] as T[]
+  return {
+    prev: prevOffset,
+    next: nextOffset,
+  }
+}
+
+export const getDateRangeWithOffsets = <T = Date>(
+  year: number,
+  monthIndex: MonthIndex,
+  formatter?: DateRangeOffsetFormatter<T>
+) => {
+  const mutator = (
+    !formatter ? defaultFormatter : formatter
+  ) as DateRangeOffsetFormatter<T>
+
+  const firstDate = new Date(year, monthIndex, 1)
+
+  const daysCount = getDaysInMonth(firstDate)
+
+  const dateRange = range(
+    {
+      from: 1,
+      to: daysCount,
+    },
+    (n) =>
+      mutator({ _year: year, _month: monthIndex, _date: n, _type: 'current' })
+  )
+
+  const { prev: prevOffset, next: nextOffset } = getDateRangeOffsets(firstDate)
+
+  return [...prevOffset, ...dateRange, ...nextOffset] as T[]
 }
