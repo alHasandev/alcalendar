@@ -1,10 +1,12 @@
 import {
   addDays,
+  addMonths,
   getDay,
   getDaysInMonth,
   lastDayOfMonth,
   setDefaultOptions,
   startOfWeek,
+  subMonths,
 } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { IndexType, range } from './array'
@@ -138,7 +140,7 @@ export const getDateRangeOffsets = <T = Date>(
 
     const toDate = fromDate + dayOfWeek - 1
     prevOffset = range({ from: fromDate, to: toDate }, (n) => {
-      const prevM = (monthIndex - 1 >= 0 ? monthIndex - 1 : 11) as MonthIndex
+      const prevM = from.getMonth() as MonthIndex
       return mutator({ _year: prevY, _month: prevM, _date: n, _type: 'prev' })
     })
   }
@@ -150,7 +152,7 @@ export const getDateRangeOffsets = <T = Date>(
 
     const toDate = 6 - lastDay
     nextOffset = range({ from: 1, to: toDate }, (n) => {
-      const nextM = (monthIndex + 1 <= 11 ? monthIndex + 1 : 0) as MonthIndex
+      const nextM = from.getMonth() as MonthIndex
       return mutator({ _year: nextY, _month: nextM, _date: n, _type: 'next' })
     })
   }
