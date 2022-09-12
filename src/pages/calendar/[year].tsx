@@ -4,85 +4,36 @@ import type {
   InferGetStaticPropsType,
   NextPage,
 } from 'next'
-import { Prisma } from '@prisma/client'
-
-import { prisma } from '@/server/db/client'
-import {
-  getDateRangeOffsets,
-  getDayNames,
-  getMonthName,
-} from '@/utils/datetime'
 import Head from 'next/head'
+
+import { MonthCalendar, StaticMonth } from '@/components/calendar/month'
+import { prisma } from '@/server/db/client'
+import { getDateRangeOffsets, getMonthName } from '@/utils/datetime'
 import { serializeObject } from '@/utils/object'
-import { createDateData, DateProps } from '@/server/db/models/date'
-import { createDateMark } from '@/server/db/models/mark'
+import { composeDateData } from '@/server/db/models/date'
+import { getDateQueryHandler } from '@/utils/query'
+import { monthArgs } from '@/server/db/models/month'
 
 type CalendarProps = InferGetStaticPropsType<typeof getStaticProps>
 
-const Calendar: NextPage<CalendarProps> = ({ months }) => {
+const Calendar: NextPage<CalendarProps> = ({ months, year }) => {
   return (
     <>
       <Head>
-        <title>Alhasandev Calendar</title>
+        <title>Alhasandev Calendar {year}</title>
         <meta name="description" content="My internal calendar project" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <main className="container max-w-screen-xl mx-auto min-h-screen p-4">
         <h1 className="text-2xl md:text-4xl leading-normal font-extrabold text-gray-700">
-          Alhasandev <span className="text-purple-300">Calendar</span>
+          Alhasandev <span className="text-purple-300">Calendar</span> {year}
         </h1>
-        <article className="px-4 py-2 grid md:grid-cols-2 lg:grid-cols-3">
+        <div className="py-2 grid md:grid-cols-2 lg:grid-cols-3 gap-2">
           {months.map((month) => (
-            <section key={month.name} className="border">
-              <header className="px-4 py-2">{month.name}</header>
-              <div className="grid grid-cols-7 text-sm text-center px-4">
-                {getDayNames((dayName) => (
-                  <span className="border py-2" key={dayName}>
-                    {dayName}
-                  </span>
-                ))}
-              </div>
-              <div className="p-4 grid grid-cols-7 box-border gap-px text-center text-sm">
-                {month.prevOffsets?.map((date) => {
-                  return (
-                    <span
-                      className={`shadow-[0_0_0_1px_rgb(100,116,139)] py-2 text-slate-500`}
-                      key={date.id}
-                    >
-                      {date.date}
-                    </span>
-                  )
-                })}
-                {month.dates.map((date) => {
-                  const isHoliday =
-                    date.marks?.[0]?.type === 'default' ||
-                    date.marks?.[0]?.type === 'holiday'
-                  return (
-                    <span
-                      className={`shadow-[0_0_0_1px_rgb(100,116,139)] py-2 text-slate-900 ${
-                        isHoliday ? 'text-red-600 bg-red-50' : ''
-                      }`}
-                      key={date.id}
-                    >
-                      {date.date}
-                    </span>
-                  )
-                })}
-                {month.nextOffsets?.map((date) => {
-                  return (
-                    <span
-                      className={`shadow-[0_0_0_1px_rgb(100,116,139)] py-2 text-slate-500`}
-                      key={date.id}
-                    >
-                      {date.date}
-                    </span>
-                  )
-                })}
-              </div>
-            </section>
+            <MonthCalendar key={month.id} data={month} />
           ))}
-        </article>
+        </div>
       </main>
     </>
   )
@@ -90,38 +41,18 @@ const Calendar: NextPage<CalendarProps> = ({ months }) => {
 
 export default Calendar
 
-const monthArgs = {
-  select: {},
-  include: {
-    dates: {
-      include: {
-        marks: true,
-      },
-    },
-  },
-}
-
-type MonthArgs = typeof monthArgs
-
-type MonthOffsets = {
-  prevOffsets?: DateProps[]
-  nextOffsets?: DateProps[]
-}
-
-type StaticMonths = (Prisma.MonthGetPayload<MonthArgs> & MonthOffsets)[]
-
 export const getStaticProps: GetStaticProps<
   {
-    months: StaticMonths
+    months: StaticMonth[]
+    year: number
   },
   {
     year: string
   }
 > = async ({ params }) => {
-  const year = Number(params?.year)
-
-  if (isNaN(year))
-    throw new TypeError('Year query not valid (YYYY) of numeric!')
+  const { year } = getDateQueryHandler(params || {}, {
+    year: new Date().getFullYear(),
+  })
 
   const months = await prisma.month.findMany({
     where: {
@@ -136,14 +67,13 @@ export const getStaticProps: GetStaticProps<
       date,
       ({ _year, _month, _date, _type }) => {
         const offsetDate = new Date(_year, _month, _date)
-        return createDateData(offsetDate, {
-          marks: {
-            create: createDateMark({
-              type: `${_type}-month`,
-              summary: getMonthName(_month),
-            }),
+        return composeDateData(offsetDate, [
+          {
+            type: _type,
+            summary: getMonthName(_month),
+            description: '',
           },
-        })
+        ])
       }
     )
 
@@ -157,13 +87,20 @@ export const getStaticProps: GetStaticProps<
   return {
     props: {
       months: serializeObject(monthsWithOffsets),
+      year: year,
     },
   }
 }
 
 export const getStaticPaths: GetStaticPaths<{ year: string }> = async () => {
+  const years = await prisma.year.findMany({
+    select: {
+      id: true,
+    },
+  })
+
   return {
-    paths: [{ params: { year: '2021' } }, { params: { year: '2022' } }],
+    paths: years.map(({ id }) => ({ params: { year: `${id}` } })),
     fallback: false,
   }
 }

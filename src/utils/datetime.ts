@@ -1,12 +1,10 @@
 import {
   addDays,
-  addMonths,
   getDay,
   getDaysInMonth,
   lastDayOfMonth,
   setDefaultOptions,
   startOfWeek,
-  subMonths,
 } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { IndexType, range } from './array'
@@ -68,10 +66,10 @@ export const getDayNames = <T>(
 }
 
 export const getDayName = (dayOfWeek: DayIndex) => {
-  return DAY_NAMES[dayOfWeek]
+  return DAY_NAMES.at(dayOfWeek) || 'Minggu'
 }
 export const getMonthName = (monthIndex: MonthIndex) => {
-  return MONTH_NAMES[monthIndex]
+  return MONTH_NAMES.at(monthIndex) || 'Januari'
 }
 
 type DateRangeFormatterArgs = {
@@ -125,7 +123,7 @@ export const getDateRangeOffsets = <T = Date>(
     !formatter ? defaultOffsetFormatter : formatter
   ) as DateRangeOffsetFormatter<T>
 
-  const monthIndex = date.getMonth()
+  // const monthIndex = date.getMonth()
   const dayOfWeek = getDay(date)
 
   const lastDate = lastDayOfMonth(date)

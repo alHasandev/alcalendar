@@ -64,13 +64,13 @@ model Permission {
 model Config {
   id     String       @id @default(cuid())
   mark   Mark         @relation(fields: [markId], references: [id])
-  markId Int          @unique
+  markId String       @unique
   author Permission[] @relation(name: "author.permissions")
   group  Permission[] @relation(name: "group.permissions")
 }
 
 model Mark {
-  id          Int      @id @default(autoincrement())
+  id          String   @id @default(cuid())
   type        String
   summary     String
   description String?
@@ -89,7 +89,7 @@ model Mark {
 
 model Group {
   id        String   @id @default(cuid())
-  name      String
+  name      String   @unique
   members   User[]
   updatedAt DateTime @updatedAt
   marks     Mark[]
@@ -136,7 +136,7 @@ model User {
   sessions      Session[]
   group         Group?    @relation(fields: [groupId], references: [id])
   groupId       String?
-  Mark          Mark[]
+  mark          Mark[]
 }
 
 model VerificationToken {

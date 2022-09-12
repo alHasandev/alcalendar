@@ -120,11 +120,16 @@ export const holidaysReducer: MarksReducer<Holiday> = (prev, curr) => {
   const m = getMonth(date) as MonthIndex
   const d = date.getDate()
 
-  const mark: DateMark = createDateMark(date, {
-    type: curr.eventType,
-    summary: curr.summary,
-    description: curr.description,
-  })
+  const mark: DateMark = createDateMark(
+    {
+      type: curr.eventType,
+      summary: curr.summary,
+      description: curr.description,
+    },
+    {
+      id: curr.id,
+    }
+  )
 
   if (!prev?.[m]?.[d]) {
     prev[m] = {
