@@ -89,6 +89,7 @@ export const getStaticProps: GetStaticProps<
       months: serializeObject(monthsWithOffsets),
       year: year,
     },
+    revalidate: 60,
   }
 }
 
@@ -101,6 +102,6 @@ export const getStaticPaths: GetStaticPaths<{ year: string }> = async () => {
 
   return {
     paths: years.map(({ id }) => ({ params: { year: `${id}` } })),
-    fallback: false,
+    fallback: 'blocking',
   }
 }
