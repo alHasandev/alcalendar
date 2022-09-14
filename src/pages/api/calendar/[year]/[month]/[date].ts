@@ -1,8 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 
-import { prisma } from '@/server/db/client'
-import { yearArgs } from '@/utils/year'
-import { makeDateId } from '@/server/db/models/date'
 import { getDateQueryHandler } from '@/utils/query'
 import { getCalendar } from '@/utils/calendar'
 

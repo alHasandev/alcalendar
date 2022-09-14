@@ -1,9 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 
-import { prisma } from '@/server/db/client'
 import { getDateQueryHandler } from '@/utils/query'
 import { getCalendar } from '@/utils/calendar'
-import { pushMarkToStaticData } from '@/server/db/models/mark'
 
 export default async function handler(
   req: NextApiRequest,

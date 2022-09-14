@@ -1,11 +1,10 @@
 import { getMonthNames, MonthIndex, MonthName } from '@/utils/datetime'
-import { DateData, Month, Prisma } from '@prisma/client'
+import { DateData, Prisma } from '@prisma/client'
 
 import { IndexedMarks } from '@/utils/holiday'
 import { format, getDaysInMonth, getWeeksInMonth } from 'date-fns'
 import { getWeek } from 'date-fns'
 import { Mark } from '@/server/db/models/mark'
-import { DateDataPayload } from '../date'
 
 export type MonthProps = Prisma.MonthCreateWithoutYearInput
 

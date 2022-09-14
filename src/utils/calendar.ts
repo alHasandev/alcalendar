@@ -3,7 +3,6 @@ import { readFile, writeFile } from 'fs/promises'
 import { composeDateData } from '@/server/db/models/date'
 import { composeMonth, MonthPayload } from '@/server/db/models/month/create'
 import { getDateRange, getMonthNames } from './datetime'
-import { Prisma } from '@prisma/client'
 
 export const staticPath = (year: number) => `public/static/${year}.json`
 
