@@ -13,6 +13,7 @@ import { serializeObject } from '@/utils/object'
 import { composeDateData, makeDateId } from '@/server/db/models/date'
 import { getDateQueryHandler } from '@/utils/query'
 import { monthArgs } from '@/server/db/models/month'
+import { getCalendar } from '@/utils/calendar'
 
 type CalendarProps = InferGetStaticPropsType<typeof getStaticProps>
 
@@ -54,12 +55,7 @@ export const getStaticProps: GetStaticProps<
     year: new Date().getFullYear(),
   })
 
-  const months = await prisma.month.findMany({
-    where: {
-      yearId: year,
-    },
-    include: monthArgs.include,
-  })
+  const { months } = await getCalendar({ year })
 
   const monthsWithOffsets = months.map((month) => {
     const date = new Date(month.yearId, month.index)
