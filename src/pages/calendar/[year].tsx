@@ -74,6 +74,8 @@ export const getStaticProps: GetStaticProps<
             type: _type,
             summary: getMonthName(_month),
             description: '',
+            year: _year,
+            month: _month,
           },
         ])
       }
