@@ -12,7 +12,6 @@ import { getDateRangeOffsets, getMonthName } from '@/utils/datetime'
 import { serializeObject } from '@/utils/object'
 import { composeDateData, makeDateId } from '@/server/db/models/date'
 import { getDateQueryHandler } from '@/utils/query'
-import { monthArgs } from '@/server/db/models/month'
 import { getCalendar } from '@/utils/calendar'
 
 type CalendarProps = InferGetStaticPropsType<typeof getStaticProps>
