@@ -10,7 +10,7 @@ import { MonthCalendar, StaticMonth } from '@/components/calendar/month'
 import { prisma } from '@/server/db/client'
 import { getDateRangeOffsets, getMonthName } from '@/utils/datetime'
 import { serializeObject } from '@/utils/object'
-import { composeDateData } from '@/server/db/models/date'
+import { composeDateData, makeDateId } from '@/server/db/models/date'
 import { getDateQueryHandler } from '@/utils/query'
 import { monthArgs } from '@/server/db/models/month'
 
@@ -69,6 +69,8 @@ export const getStaticProps: GetStaticProps<
         const offsetDate = new Date(_year, _month, _date)
         return composeDateData(offsetDate, [
           {
+            id: '',
+            dateId: makeDateId(offsetDate),
             type: _type,
             summary: getMonthName(_month),
             description: '',

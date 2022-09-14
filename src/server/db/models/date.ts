@@ -1,6 +1,7 @@
 import { getDayName, MonthIndex } from '@/utils/datetime'
 import { Prisma } from '@prisma/client'
 import { format, getDay, getWeek } from 'date-fns'
+import { Mark } from './mark'
 import { makeMonthId } from './month'
 
 export type DateProps = Prisma.DateDataUncheckedCreateWithoutMonthInput
@@ -12,13 +13,10 @@ export type MarkedDates = Record<number, DateProps>
 export const makeDateId = (date: Date) => format(date, 'yyyy-MM-dd')
 
 export type DateDataPayload = Prisma.DateDataGetPayload<Prisma.DateDataArgs> & {
-  marks: Partial<Prisma.MarkGetPayload<Prisma.MarkArgs>>[]
+  marks: Mark[]
 }
 
-export const composeDateData = (
-  date: Date,
-  marks: DateDataPayload['marks']
-) => {
+export const composeDateData = (date: Date, marks: Mark[]) => {
   const Y = date.getFullYear()
   const m = date.getMonth() as MonthIndex
 

@@ -2,6 +2,22 @@ import { Prisma } from '@prisma/client'
 
 export type DateMark = Prisma.MarkCreateWithoutDateInput
 
+export type Mark = {
+  id: string
+  year: number
+  month: number
+  dateId: string
+  type: string
+  summary: string
+  description: string | null
+  image?: string | null
+  startAt?: number | null
+  endAt?: number | null
+  authorId?: string | null
+  groupId?: string | null
+  updatedAt?: Date | null
+}
+
 export type MarkType =
   | 'default'
   | 'app-event'
@@ -11,6 +27,19 @@ export type MarkType =
   | 'next-year'
   | 'holiday'
   | 'leave'
+
+export const pushMarkToStaticData = (
+  marks: Mark[],
+  dataset: (_m: number, _n: number) => Mark[] | undefined
+) => {
+  marks.map((mark) => {
+    const date = new Date(mark.dateId)
+    const d = date.getDate()
+    const m = date.getMonth()
+
+    dataset(m, d - 1)?.push(mark)
+  })
+}
 
 export const createDateMark = (
   data: {

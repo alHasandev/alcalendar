@@ -83,12 +83,14 @@ export const monthUpsertHandler = async (year: number, month: MonthIndex) => {
         return new Date(holiday.start.date).getMonth() === month
       })
       .map((holiday) => {
+        const date = new Date(holiday.start.date)
         return {
           id: holiday.id,
           type: holiday.eventType,
           summary: holiday.summary,
           description: holiday.description,
-          dateId: makeDateId(new Date(holiday.start.date)),
+          dateId: makeDateId(date),
+          year: date.getFullYear(),
         }
       })
 

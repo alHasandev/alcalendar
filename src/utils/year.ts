@@ -60,10 +60,12 @@ export const yearUpsertHandler = async (year: number) => {
     action = 'updated'
 
     const listOfMarks = holidaysApi.items.map((holiday) => {
-      const dateId = makeDateId(new Date(holiday.start.date))
+      const date = new Date(holiday.start.date)
+      const dateId = makeDateId(date)
       return {
         id: holiday.id,
         dateId: dateId,
+        year: date.getFullYear(),
         type: holiday.eventType,
         summary: holiday.summary,
         description: holiday.description,

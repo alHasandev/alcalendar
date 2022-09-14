@@ -1,10 +1,9 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 
 import { prisma } from '@/server/db/client'
-import { yearArgs } from '@/utils/year'
-import { makeMonthId } from '@/server/db/models/month'
-import { MonthIndex } from '@/utils/datetime'
 import { getDateQueryHandler } from '@/utils/query'
+import { getCalendar } from '@/utils/calendar'
+import { pushMarkToStaticData } from '@/server/db/models/mark'
 
 export default async function handler(
   req: NextApiRequest,
@@ -16,13 +15,7 @@ export default async function handler(
       month: 0,
     })
 
-    const monthId = makeMonthId(year, month as MonthIndex)
-    const data = await prisma.month.findUnique({
-      where: {
-        id: monthId,
-      },
-      include: yearArgs.include.months.include,
-    })
+    const data = await getCalendar({ year, month })
 
     if (!data)
       return res.status(404).json({

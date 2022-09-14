@@ -1,8 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 
-import { prisma } from '@/server/db/client'
-import { yearArgs } from '@/utils/year'
 import { getDateQueryHandler } from '@/utils/query'
+import { getCalendar } from '@/utils/calendar'
 
 export default async function handler(
   req: NextApiRequest,
@@ -13,12 +12,7 @@ export default async function handler(
       year: new Date().getFullYear(),
     })
 
-    const data = await prisma.year.findUnique({
-      where: {
-        id: year,
-      },
-      include: yearArgs.include,
-    })
+    const data = await getCalendar({ year })
 
     if (!data)
       return res.status(404).json({

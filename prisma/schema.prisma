@@ -75,6 +75,8 @@ model Mark {
   startAt     Int? // Time: H:m:i -> to miliseconds
   endAt       Int? // Time: H:m:i -> to miliseconds
   date        DateData @relation(fields: [dateId], references: [id])
+  year        Int      @default(2022)
+  month       Int      @default(0)
   dateId      String // string: YYYYmmdd (8)
   author      User?    @relation(fields: [authorId], references: [id])
   authorId    String?

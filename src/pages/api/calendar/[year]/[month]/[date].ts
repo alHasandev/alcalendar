@@ -4,6 +4,7 @@ import { prisma } from '@/server/db/client'
 import { yearArgs } from '@/utils/year'
 import { makeDateId } from '@/server/db/models/date'
 import { getDateQueryHandler } from '@/utils/query'
+import { getCalendar } from '@/utils/calendar'
 
 export default async function handler(
   req: NextApiRequest,
@@ -16,13 +17,7 @@ export default async function handler(
       date: 0,
     })
 
-    const dateId = makeDateId(new Date(year, month, date))
-    const data = await prisma.dateData.findUnique({
-      where: {
-        id: dateId,
-      },
-      include: yearArgs.include.months.include.dates.include,
-    })
+    const data = await getCalendar({ year, month, date })
 
     if (!data)
       return res.status(404).json({
