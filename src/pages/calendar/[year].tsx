@@ -8,7 +8,7 @@ import Head from 'next/head'
 
 import { MonthCalendar, StaticMonth } from '@/components/calendar/month'
 import { prisma } from '@/server/db/client'
-import { getDateRangeOffsets, getMonthName, TO } from '@/utils/datetime'
+import { getDateRangeOffsets, getMonthName } from '@/utils/datetime'
 import { serializeObject } from '@/utils/object'
 import { composeDateData, makeDateId } from '@/server/db/models/date'
 import { getDateQueryHandler } from '@/utils/query'

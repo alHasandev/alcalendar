@@ -6,8 +6,6 @@ import {
   getMonth,
   lastDayOfMonth,
   setDefaultOptions,
-  startOfWeek,
-  subDays,
   subMonths,
 } from 'date-fns'
 import { id } from 'date-fns/locale'
