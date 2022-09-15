@@ -17,10 +17,11 @@ import { getCalendar } from '@/utils/calendar'
 type CalendarProps = InferGetStaticPropsType<typeof getStaticProps>
 
 const Calendar: NextPage<CalendarProps> = ({ months, year }) => {
+  const title = `Alhasandev Calendar - ${year}`
   return (
     <>
       <Head>
-        <title>Alhasandev Calendar {year}</title>
+        <title>{title}</title>
         <meta name="description" content="My internal calendar project" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
