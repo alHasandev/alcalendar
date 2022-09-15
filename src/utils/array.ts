@@ -16,10 +16,6 @@ export function range<T>(
     throw Error('"to" must be greater or equal "from"')
   }
 
-  if (to === from) {
-    return [] as T[]
-  }
-
   const ranges = Array.from(
     { length: Math.ceil((to - from + 1) / step) },
     (_, i) => callback(i * step + from)

@@ -1,8 +1,14 @@
 import { getDayName, MonthIndex } from '@/utils/datetime'
 import { Prisma } from '@prisma/client'
-import { format, getDay, getWeek } from 'date-fns'
+import { format, getDate, getDay, getWeek, setDefaultOptions } from 'date-fns'
+import { id } from 'date-fns/locale'
 import { Mark } from './mark'
 import { makeMonthId } from './month'
+
+// Default options for date-fns
+setDefaultOptions({
+  locale: id,
+})
 
 export type DateProps = Prisma.DateDataUncheckedCreateWithoutMonthInput
 export type DatesProps = Prisma.DateDataCreateNestedManyWithoutMonthInput
@@ -22,7 +28,7 @@ export const composeDateData = (date: Date, marks: Mark[]) => {
 
   const dateProps: DateDataPayload = {
     id: makeDateId(date),
-    date: date.getDate(),
+    date: getDate(date),
     dayName: getDayName(getDay(date)),
     dayIndex: getDay(date),
     weekIndex: getWeek(date, {
@@ -46,7 +52,7 @@ export const createDateData = (
   const m = date.getMonth() as MonthIndex
   const dateProps: Prisma.DateDataUncheckedCreateWithoutMonthInput = {
     id: makeDateId(date),
-    date: date.getDate(),
+    date: getDate(date),
     dayName: getDayName(getDay(date)),
     dayIndex: getDay(date),
     weekIndex: getWeek(date, {

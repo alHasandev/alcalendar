@@ -1,38 +1,6 @@
-import { prisma } from '@/server/db/client'
+import { getDateRangeOffsets } from '@/utils/datetime'
+import { getDate } from 'date-fns'
 import { NextApiHandler } from 'next'
-
-const selectWhereMarkedOnYear = (year: number) => ({
-  NOT: {
-    dates: {
-      every: {
-        marks: {
-          every: {
-            dateId: `${year}`,
-          },
-        },
-      },
-    },
-  },
-})
-
-const includeWhereMarkedOnYear = (year: number) => ({
-  dates: {
-    where: {
-      NOT: {
-        marks: {
-          none: {
-            dateId: {
-              contains: `${year}`,
-            },
-          },
-        },
-      },
-    },
-    include: {
-      marks: true,
-    },
-  },
-})
 
 const handler: NextApiHandler = async (req, res) => {
   const year = Number(req.query.year)
@@ -40,18 +8,13 @@ const handler: NextApiHandler = async (req, res) => {
   if (isNaN(year))
     throw new TypeError('Year query not valid (YYYY) of numeric!')
 
-  const months = await prisma.month.findMany({
-    where: selectWhereMarkedOnYear(year),
-    include: includeWhereMarkedOnYear(year),
-  })
+  const data = getDateRangeOffsets(new Date(year, 8), (date) =>
+    getDate(new Date(date._year, date._month, date._date))
+  )
 
   return res.status(200).json({
     success: true,
-    yearData: {
-      yearId: year,
-      markedMonthCount: months.length,
-    },
-    months,
+    data,
   })
 }
 

@@ -1,4 +1,11 @@
 import { Prisma } from '@prisma/client'
+import { getDate, setDefaultOptions } from 'date-fns'
+import { id } from 'date-fns/locale'
+
+// Default options for date-fns
+setDefaultOptions({
+  locale: id,
+})
 
 export type DateMark = Prisma.MarkCreateWithoutDateInput
 
@@ -34,7 +41,7 @@ export const pushMarkToStaticData = (
 ) => {
   marks.map((mark) => {
     const date = new Date(mark.dateId)
-    const d = date.getDate()
+    const d = getDate(date)
     const m = date.getMonth()
 
     dataset(m, d - 1)?.push(mark)

@@ -1,8 +1,20 @@
 import { env } from '@/env/server.mjs'
 import { createDateMark, DateMark } from '@/server/db/models/mark'
-import { endOfMonth, formatRFC3339, getMonth } from 'date-fns'
+import {
+  endOfMonth,
+  formatRFC3339,
+  getDate,
+  getMonth,
+  setDefaultOptions,
+} from 'date-fns'
+import { id } from 'date-fns/locale'
 import { MonthIndex } from './datetime'
 import { MarksReducer } from './holiday'
+
+// Default options for date-fns
+setDefaultOptions({
+  locale: id,
+})
 
 export type HolidaysAPI = {
   kind: 'calendar#events'
@@ -118,7 +130,7 @@ export const fetchHolidays: FetchHolidays = async (params) => {
 export const holidaysReducer: MarksReducer<Holiday> = (prev, curr) => {
   const date = new Date(curr.start.date)
   const m = getMonth(date) as MonthIndex
-  const d = date.getDate()
+  const d = getDate(date)
 
   const mark: DateMark = createDateMark(
     {
