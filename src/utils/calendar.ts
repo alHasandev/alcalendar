@@ -3,8 +3,13 @@ import { readFile, writeFile } from 'fs/promises'
 import { composeDateData } from '@/server/db/models/date'
 import { composeMonth, MonthPayload } from '@/server/db/models/month/create'
 import { getDateRange, getMonthNames } from './datetime'
+import path from 'path'
 
-export const staticPath = (year: number) => `public/static/${year}.json`
+export const staticPath = (year: number) => {
+  const dir = 'public/static/'
+  const processDir = path.join(process.cwd(), dir)
+  return `${processDir}${year}.json`
+}
 
 export interface Calendar {
   id: string
@@ -60,8 +65,8 @@ type TCalendar<T> = T extends YearMonth
   : Calendar
 
 export const getCalendar = async <T extends Args>(args: T) => {
-  const json = await readFile(staticPath(args.year))
-  const data = JSON.parse(json.toString()) as Calendar
+  const json = await readFile(staticPath(args.year), 'utf8')
+  const data = JSON.parse(json) as Calendar
 
   if (args?.month && args?.date)
     return data.months[args.month]?.dates[args.date - 1] as TCalendar<T>
