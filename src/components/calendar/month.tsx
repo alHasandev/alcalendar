@@ -1,6 +1,7 @@
 import { DateDataPayload } from '@/server/db/models/date'
 import { MonthPayload } from '@/server/db/models/month/create'
 import { getDayNames } from '@/utils/datetime'
+import Link from 'next/link'
 
 type MonthOffsets = {
   prevOffsets?: DateDataPayload[]
@@ -15,19 +16,18 @@ export type MonthProps = {
 
 export function MonthCalendar({ data }: MonthProps) {
   return (
-    <article key={data.name} className="border">
-      <h2 className="px-4 py-2">{data.name}</h2>
-      <header className="grid grid-cols-7 text-sm text-center px-4">
+    <article key={data.id} className="flex flex-col gap-4">
+      <header className="grid grid-cols-7 gap-px text-sm text-center">
         {getDayNames((dayName) => (
           <div
-            className="border py-2 px-1 text-ellipsis overflow-hidden"
+            className="shadow-[0_0_0_1px_rgb(100,116,139)]  py-2 px-1 text-ellipsis overflow-hidden"
             key={dayName}
           >
             {dayName}
           </div>
         ))}
       </header>
-      <section className="p-4 grid grid-cols-7 box-border gap-px text-center text-sm">
+      <section className="grid grid-cols-7 box-border gap-px text-center text-sm">
         {data.prevOffsets?.map((date) => {
           const title = date.marks.at(0)?.summary.toString()
           return (
@@ -48,8 +48,8 @@ export function MonthCalendar({ data }: MonthProps) {
           const title = date.marks.at(0)?.summary.toString()
           return (
             <span
-              className={`shadow-[0_0_0_1px_rgb(100,116,139)] py-2 text-slate-900 cursor-pointer ${
-                isHoliday ? 'text-red-600 bg-red-50' : ''
+              className={`shadow-[0_0_0_1px_rgb(100,116,139)] py-2 cursor-pointer ${
+                isHoliday ? 'text-red-600 bg-red-50' : 'text-slate-900'
               }`}
               key={date.id}
               title={title}

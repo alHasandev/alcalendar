@@ -14,23 +14,32 @@ import { composeDateData, makeDateId } from '@/server/db/models/date'
 import { getDateQueryHandler } from '@/utils/query'
 import { makeMonthId, monthArgs } from '@/server/db/models/month'
 import { format } from 'date-fns'
+import { getCalendar } from '@/utils/calendar'
+import Link from 'next/link'
 
 type CalendarProps = InferGetStaticPropsType<typeof getStaticProps>
 
 const Calendar: NextPage<CalendarProps> = ({ month, year }) => {
+  const title = `Alhasandev Calendar - ${year}/${month.index + 1}`
   return (
     <>
       <Head>
-        <title>Alhasandev Calendar {year}</title>
+        <title>{title}</title>
         <meta name="description" content="My internal calendar project" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <main className="container max-w-screen-xl mx-auto min-h-screen p-4">
-        <h1 className="text-2xl md:text-4xl leading-normal font-extrabold text-gray-700">
-          Alhasandev <span className="text-purple-300">Calendar</span> {year}
-        </h1>
-        <div className="py-2">
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-2xl md:text-4xl leading-normal font-extrabold text-gray-700">
+            Alhasandev <span className="text-purple-300">Calendar</span>{' '}
+            {month.name} {year}
+          </h1>
+          <Link href={`/calendar/${month.yearId}`}>
+            <a className="border px-2 py-1 rounded-md inline-block">Back</a>
+          </Link>
+        </div>
+        <div className="p-4 border rounded-md">
           <MonthCalendar key={month.id} data={month} />
         </div>
       </main>
@@ -55,16 +64,12 @@ export const getStaticProps: GetStaticProps<
     month: 0,
   })
 
-  const data = await prisma.month.findUnique({
-    where: {
-      id: makeMonthId(year, month as MonthIndex),
-    },
-    include: monthArgs.include,
-  })
+  const data = await getCalendar({ year, month })
 
   if (!data) throw new Error('Calendar Not Found')
+  // console.log('🚀 ~ file: index.tsx ~ line 69 ~ >= ~ data', data)
 
-  const date = new Date(year, data.index)
+  const date = new Date(year, month)
   const { prev, next } = getDateRangeOffsets(
     date,
     ({ _year, _month, _date, _type }) => {
@@ -83,13 +88,17 @@ export const getStaticProps: GetStaticProps<
     }
   )
 
+  const monthData = serializeObject({
+    ...data,
+    prevOffsets: prev,
+    nextOffsets: next,
+  })
+
+  console.log('🚀 ~ file: index.tsx ~ line 95 ~ >= ~ monthData', monthData)
+
   return {
     props: {
-      month: serializeObject({
-        ...data,
-        prevOffsets: prev,
-        nextOffsets: next,
-      }),
+      month: monthData,
       year: year,
     },
   }

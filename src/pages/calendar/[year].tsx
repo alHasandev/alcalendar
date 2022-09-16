@@ -13,6 +13,7 @@ import { serializeObject } from '@/utils/object'
 import { composeDateData, makeDateId } from '@/server/db/models/date'
 import { getDateQueryHandler } from '@/utils/query'
 import { getCalendar } from '@/utils/calendar'
+import Link from 'next/link'
 
 type CalendarProps = InferGetStaticPropsType<typeof getStaticProps>
 
@@ -30,11 +31,20 @@ const Calendar: NextPage<CalendarProps> = ({ months, year }) => {
         <h1 className="text-2xl md:text-4xl leading-normal font-extrabold text-gray-700">
           Alhasandev <span className="text-purple-300">Calendar</span> {year}
         </h1>
-        <div className="py-2 grid md:grid-cols-2 lg:grid-cols-3 gap-2">
+        <section className="py-2 grid md:grid-cols-2 lg:grid-cols-3 gap-2">
           {months.map((month) => (
-            <MonthCalendar key={month.id} data={month} />
+            <div key={month.id} className="border p-4 rounded-md">
+              <h2 className="mb-4">
+                <Link href={`${month.yearId}/${month.index}`}>
+                  <a className="px-4 py-1 rounded-md inline-block transition-colors bg-purple-300 text-slate-900 hover:bg-purple-700 hover:text-purple-50">
+                    {month.name}
+                  </a>
+                </Link>
+              </h2>
+              <MonthCalendar data={month} />
+            </div>
           ))}
-        </div>
+        </section>
       </main>
     </>
   )

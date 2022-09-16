@@ -68,10 +68,10 @@ export const getCalendar = async <T extends Args>(args: T) => {
   const json = await readFile(staticPath(args.year), 'utf8')
   const data = JSON.parse(json) as Calendar
 
-  if (args?.month && args?.date)
+  if (args?.month !== undefined && args?.date !== undefined)
     return data.months[args.month]?.dates[args.date - 1] as TCalendar<T>
 
-  if (args?.month) {
+  if (args?.month !== undefined) {
     return data.months[args.month] as TCalendar<T>
   }
 
