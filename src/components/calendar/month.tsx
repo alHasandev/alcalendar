@@ -1,7 +1,6 @@
 import { DateDataPayload } from '@/server/db/models/date'
 import { MonthPayload } from '@/server/db/models/month/create'
 import { getDayNames } from '@/utils/datetime'
-import Link from 'next/link'
 
 type MonthOffsets = {
   prevOffsets?: DateDataPayload[]
