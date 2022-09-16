@@ -3,10 +3,22 @@ import { httpBatchLink } from '@trpc/client/links/httpBatchLink'
 import { loggerLink } from '@trpc/client/links/loggerLink'
 import { withTRPC } from '@trpc/next'
 import { SessionProvider } from 'next-auth/react'
-import type { AppType } from 'next/dist/shared/lib/utils'
+import { AppPropsType } from 'next/dist/shared/lib/utils'
 import superjson from 'superjson'
 import type { AppRouter } from '@/server/router'
 import '@/styles/globals.css'
+import { ComponentType } from 'react'
+import { NextRouter } from 'next/router'
+import { Session } from 'next-auth'
+
+type AppType = ComponentType<
+  AppPropsType<
+    NextRouter,
+    {
+      session?: Session | null
+    }
+  >
+>
 
 const MyApp: AppType = ({
   Component,
