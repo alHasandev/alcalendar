@@ -16,7 +16,13 @@ export const serverSchema = z.object({
   GOOGLE_CLIENT_SECRET: z.string(),
   HOLIDAYS_API_URL: z.string().url(),
   HOLIDAYS_API_KEY: z.string(),
-  GOGGLE_CALENDAR_EVENT_LIST: z.string().url()
+  GOGGLE_CALENDAR_EVENT_LIST: z.string().url(),
+  UPSTASH_REDIS_HOST: z.string(),
+  UPSTASH_REDIS_PASS: z.string(),
+  UPSTASH_REDIS_PORT: z.string(),
+  UPSTASH_REDIS_URL: z.string().url(),
+  UPSTASH_REDIS_REST_URL: z.string().url(),
+  UPSTASH_REDIS_REST_TOKEN: z.string(),
 });
 
 /**

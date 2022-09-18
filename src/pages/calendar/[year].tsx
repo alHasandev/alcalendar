@@ -7,13 +7,14 @@ import type {
 import Head from 'next/head'
 
 import { MonthCalendar, StaticMonth } from '@/components/calendar/month'
-import { prisma } from '@/server/db/client'
 import { getDateRangeOffsets, getMonthName } from '@/utils/datetime'
 import { serializeObject } from '@/utils/object'
-import { composeDateData, makeDateId } from '@/server/db/models/date'
+import { makeDateId } from '@/server/db/models/date'
 import { getDateQueryHandler } from '@/utils/query'
 import { getCalendar } from '@/utils/calendar'
 import Link from 'next/link'
+import { createDateData } from '@/server/redis/calendar'
+import { getRedisArray } from '@/server/redis/client'
 
 type CalendarProps = InferGetStaticPropsType<typeof getStaticProps>
 
@@ -35,7 +36,7 @@ const Calendar: NextPage<CalendarProps> = ({ months, year }) => {
           {months.map((month) => (
             <div key={month.id} className="border p-4 rounded-md">
               <h2 className="mb-4">
-                <Link href={`${month.yearId}/${month.index}`}>
+                <Link href={`${month.year}/${month.index + 1}`}>
                   <a className="px-4 py-1 rounded-md inline-block transition-colors bg-purple-300 text-slate-900 hover:bg-purple-700 hover:text-purple-50">
                     {month.name}
                   </a>
@@ -65,38 +66,39 @@ export const getStaticProps: GetStaticProps<
     year: new Date().getFullYear(),
   })
 
-  const { months } = await getCalendar({ year })
+  const calendar = await getCalendar({ year })
 
-  const monthsWithOffsets = months.map((month) => {
-    const date = new Date(month.yearId, month.index)
-    const { prev, next } = getDateRangeOffsets(
-      date,
-      ({ _year, _month, _date, _type }) => {
-        const offsetDate = new Date(_year, _month, _date)
-        return composeDateData(offsetDate, [
-          {
-            id: '',
-            dateId: makeDateId(offsetDate),
-            type: _type,
-            summary: getMonthName(_month),
-            description: '',
-            year: _year,
-            month: _month,
-          },
-        ])
+  const monthsWithOffsets = calendar.months.map((month) => {
+    const date = new Date(year, month.index)
+    getDateRangeOffsets(date, ({ _year, _month, _date, _type }) => {
+      const offsetDate = new Date(_year, _month, _date)
+      const date = createDateData(offsetDate, [
+        {
+          id: '',
+          dateId: makeDateId(offsetDate),
+          type: _type,
+          summary: getMonthName(_month),
+          description: '',
+          year: _year,
+          month: _month,
+        },
+      ])
+
+      if (_type === 'prev') {
+        month.offsets.prev.push(date)
       }
-    )
 
-    return {
-      ...month,
-      prevOffsets: prev,
-      nextOffsets: next,
-    }
+      if (_type === 'next') {
+        month.offsets.next.push(date)
+      }
+    })
+
+    return month
   })
 
   return {
     props: {
-      months: serializeObject(monthsWithOffsets),
+      months: monthsWithOffsets,
       year: year,
     },
     revalidate: 60,
@@ -104,14 +106,10 @@ export const getStaticProps: GetStaticProps<
 }
 
 export const getStaticPaths: GetStaticPaths<{ year: string }> = async () => {
-  const years = await prisma.year.findMany({
-    select: {
-      id: true,
-    },
-  })
+  const years = await getRedisArray('years')
 
   return {
-    paths: years.map(({ id }) => ({ params: { year: `${id}` } })),
+    paths: years.map((id) => ({ params: { year: `${id}` } })),
     fallback: 'blocking',
   }
 }

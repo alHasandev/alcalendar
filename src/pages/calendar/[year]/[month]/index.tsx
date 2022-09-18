@@ -7,14 +7,18 @@ import type {
 import Head from 'next/head'
 
 import { MonthCalendar, StaticMonth } from '@/components/calendar/month'
-import { prisma } from '@/server/db/client'
-import { getDateRangeOffsets, getMonthName } from '@/utils/datetime'
-import { serializeObject } from '@/utils/object'
-import { composeDateData, makeDateId } from '@/server/db/models/date'
+
+import {
+  getDateRangeOffsets,
+  getMonthName,
+  getMonthNames,
+} from '@/utils/datetime'
+import { makeDateId } from '@/server/db/models/date'
 import { getDateQueryHandler } from '@/utils/query'
-import { format } from 'date-fns'
 import { getCalendar } from '@/utils/calendar'
 import Link from 'next/link'
+import { getRedisArray } from '@/server/redis/client'
+import { createDateData } from '@/server/redis/calendar'
 
 type CalendarProps = InferGetStaticPropsType<typeof getStaticProps>
 
@@ -34,7 +38,7 @@ const Calendar: NextPage<CalendarProps> = ({ month, year }) => {
             Alhasandev <span className="text-purple-300">Calendar</span>{' '}
             {month.name} {year}
           </h1>
-          <Link href={`/calendar/${month.yearId}`}>
+          <Link href={`/calendar/${month.year}`}>
             <a className="border px-2 py-1 rounded-md inline-block">Back</a>
           </Link>
         </div>
@@ -63,41 +67,37 @@ export const getStaticProps: GetStaticProps<
     month: 0,
   })
 
-  const data = await getCalendar({ year, month })
+  const data = await getCalendar({ year, month: month - 1 })
 
   if (!data) throw new Error('Calendar Not Found')
-  // console.log('🚀 ~ file: index.tsx ~ line 69 ~ >= ~ data', data)
 
-  const date = new Date(year, month)
-  const { prev, next } = getDateRangeOffsets(
-    date,
-    ({ _year, _month, _date, _type }) => {
-      const offsetDate = new Date(_year, _month, _date) as Date
-      return composeDateData(offsetDate, [
-        {
-          id: '',
-          dateId: makeDateId(offsetDate),
-          type: _type,
-          summary: getMonthName(_month),
-          description: format(offsetDate, 'yyyy-MM-dd'),
-          year: _year,
-          month: _month,
-        },
-      ])
+  const date = new Date(year, month - 1)
+  getDateRangeOffsets(date, ({ _year, _month, _date, _type }) => {
+    const offsetDate = new Date(_year, _month, _date)
+    const date = createDateData(offsetDate, [
+      {
+        id: '',
+        dateId: makeDateId(offsetDate),
+        type: _type,
+        summary: getMonthName(_month),
+        description: '',
+        year: _year,
+        month: _month,
+      },
+    ])
+
+    if (_type === 'prev') {
+      data.offsets.prev.push(date)
     }
-  )
 
-  const monthData = serializeObject({
-    ...data,
-    prevOffsets: prev,
-    nextOffsets: next,
+    if (_type === 'next') {
+      data.offsets.next.push(date)
+    }
   })
-
-  console.log('🚀 ~ file: index.tsx ~ line 95 ~ >= ~ monthData', monthData)
 
   return {
     props: {
-      month: monthData,
+      month: data,
       year: year,
     },
   }
@@ -109,17 +109,23 @@ type StaticPath = {
 }
 
 export const getStaticPaths: GetStaticPaths<StaticPath> = async () => {
-  const months = await prisma.month.findMany({
-    select: {
-      yearId: true,
-      index: true,
-    },
-  })
+  const years = await getRedisArray('years')
+
+  const paths = years.reduce((params, year) => {
+    getMonthNames((_, index) => {
+      params.push({
+        params: {
+          year: year,
+          month: `${index + 1}`,
+        },
+      })
+    })
+
+    return params
+  }, [] as { params: StaticPath }[])
 
   return {
-    paths: months.map(({ yearId, index }) => ({
-      params: { year: `${yearId}`, month: `${index}` },
-    })),
+    paths: paths,
     fallback: false,
   }
 }

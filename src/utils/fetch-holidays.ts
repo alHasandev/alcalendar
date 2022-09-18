@@ -75,23 +75,28 @@ export interface EventEnd {
 
 type FetchHolidaysParams = {
   year: number
-  month?: MonthIndex
+  month?: number
+  date?: number
 }
 
 export function dateConstraintToEventsTimeRange({
   year,
   month,
+  date,
 }: FetchHolidaysParams): {
   timeMin: string
   timeMax: string
 } {
   const monthMin = month || 0
-  const dateMin = new Date(year, monthMin, 1)
+  const dateMin = date
+    ? new Date(year, monthMin, date)
+    : new Date(year, monthMin)
 
-  const monthMax = month || 11
-  const dateMax = endOfMonth(new Date(year, monthMax, 1))
+  const monthMax = month !== undefined ? month : 11
+  const dateMax = date
+    ? new Date(year, monthMax, date + 1)
+    : endOfMonth(new Date(year, monthMax))
 
-  console.log('date constraint max', dateMax)
   return {
     timeMin: encodeURIComponent(formatRFC3339(dateMin)),
     timeMax: encodeURIComponent(formatRFC3339(dateMax)),

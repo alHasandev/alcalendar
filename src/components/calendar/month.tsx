@@ -1,13 +1,7 @@
-import { DateDataPayload } from '@/server/db/models/date'
-import { MonthPayload } from '@/server/db/models/month/create'
+import { Month } from '@/server/redis/calendar'
 import { getDayNames } from '@/utils/datetime'
 
-type MonthOffsets = {
-  prevOffsets?: DateDataPayload[]
-  nextOffsets?: DateDataPayload[]
-}
-
-export type StaticMonth = MonthPayload & MonthOffsets
+export type StaticMonth = Month
 
 export type MonthProps = {
   data: StaticMonth
@@ -27,24 +21,24 @@ export function MonthCalendar({ data }: MonthProps) {
         ))}
       </header>
       <section className="grid grid-cols-7 box-border gap-px text-center text-sm">
-        {data.prevOffsets?.map((date) => {
-          const title = date.marks.at(0)?.summary.toString()
+        {data.offsets.prev.map((date) => {
+          const title = date.events.at(0)?.summary.toString()
           return (
             <span
               className={`shadow-[0_0_0_1px_rgb(100,116,139)] py-2 text-slate-500 cursor-pointer`}
               key={date.id}
               title={`${title} sebelumnya`}
             >
-              {date.date}
+              {date.index}
             </span>
           )
         })}
         {data.dates.map((date) => {
           const isHoliday =
-            date.marks?.[0]?.type === 'default' ||
-            date.marks?.[0]?.type === 'holiday'
+            date.events.at(0)?.type === 'default' ||
+            date.events.at(0)?.type === 'holiday'
 
-          const title = date.marks.at(0)?.summary.toString()
+          const title = date.events.at(0)?.summary.toString()
           return (
             <span
               className={`shadow-[0_0_0_1px_rgb(100,116,139)] py-2 cursor-pointer ${
@@ -53,19 +47,19 @@ export function MonthCalendar({ data }: MonthProps) {
               key={date.id}
               title={title}
             >
-              {date.date}
+              {date.index}
             </span>
           )
         })}
-        {data.nextOffsets?.map((date) => {
-          const title = date.marks.at(0)?.summary.toString()
+        {data.offsets.next.map((date) => {
+          const title = date.events.at(0)?.summary.toString()
           return (
             <span
               className={`shadow-[0_0_0_1px_rgb(100,116,139)] py-2 text-slate-500 cursor-pointer`}
               key={date.id}
               title={`${title} selanjutnya`}
             >
-              {date.date}
+              {date.index}
             </span>
           )
         })}

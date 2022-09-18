@@ -1,6 +1,7 @@
+import { makeDateId } from '@/server/db/models/date'
 import { DateMark } from '@/server/db/models/mark'
 import { MonthIndex } from './datetime'
-import fetchHolidays, { holidaysReducer } from './fetch-holidays'
+import fetchHolidays, { Holiday, holidaysReducer } from './fetch-holidays'
 
 export type IndexedMarks = Record<number, DateMark[]>
 export type MarksReducer<T> = (
@@ -33,4 +34,22 @@ export const getHolidaysObj = async (year: number) => {
   )
 
   return holidays
+}
+
+export const apiDataItemsToEvents = (items: Holiday[]) => {
+  return items.map((data, i) => {
+    const date: Date = new Date(data.start.date)
+    const dateId = makeDateId(date)
+    return {
+      id: data.id,
+      dateId: dateId,
+      type: data.eventType,
+      summary: data.summary,
+      description: data.description,
+      authorId: data.creator.email,
+      groupId: data.organizer.email,
+      year: date.getFullYear(),
+      month: date.getMonth(),
+    }
+  })
 }
