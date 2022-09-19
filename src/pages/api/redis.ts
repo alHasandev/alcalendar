@@ -1,5 +1,4 @@
-import client from '@/server/redis/client'
-import { example, getPeople, getPerson, setPerson } from '@/server/redis/person'
+import { getPeople, getPerson } from '@/server/redis/person'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 export default async function testRedis(

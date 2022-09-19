@@ -37,7 +37,7 @@ export const getHolidaysObj = async (year: number) => {
 }
 
 export const apiDataItemsToEvents = (items: Holiday[]) => {
-  return items.map((data, i) => {
+  return items.map((data) => {
     const date: Date = new Date(data.start.date)
     const dateId = makeDateId(date)
     return {

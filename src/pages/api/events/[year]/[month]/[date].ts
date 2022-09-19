@@ -1,4 +1,3 @@
-import { MonthIndex } from '@/utils/datetime'
 import fetchHolidays from '@/utils/fetch-holidays'
 import { apiDataItemsToEvents } from '@/utils/holiday'
 import { getDateQueryHandler } from '@/utils/query'

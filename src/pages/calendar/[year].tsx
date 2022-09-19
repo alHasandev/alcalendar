@@ -8,7 +8,6 @@ import Head from 'next/head'
 
 import { MonthCalendar, StaticMonth } from '@/components/calendar/month'
 import { getDateRangeOffsets, getMonthName } from '@/utils/datetime'
-import { serializeObject } from '@/utils/object'
 import { makeDateId } from '@/server/db/models/date'
 import { getDateQueryHandler } from '@/utils/query'
 import { getCalendar } from '@/utils/calendar'
