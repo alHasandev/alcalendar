@@ -20,7 +20,6 @@ export const serverSchema = z.object({
   UPSTASH_REDIS_HOST: z.string(),
   UPSTASH_REDIS_PASS: z.string(),
   UPSTASH_REDIS_PORT: z.string(),
-  UPSTASH_REDIS_URL: z.string().url(),
   UPSTASH_REDIS_REST_URL: z.string().url(),
   UPSTASH_REDIS_REST_TOKEN: z.string(),
 });
